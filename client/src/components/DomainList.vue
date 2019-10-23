@@ -40,9 +40,9 @@
 </template>
 
 <script>
-import "bootstrap/dist/css/bootstrap.css";
-import "font-awesome/css/font-awesome.css";
+
 import AppItemList from "./AppItemList";
+import axios from "axios/dist/axios";
 
 export default {
 	name: "app",
@@ -51,8 +51,8 @@ export default {
 	},
 	data: function() {
 		return {
-			prefixes: ["Air", "Jet", "Flight"],
-			sufixes: ["Hub", "Station", "Mart"]
+			prefixes: [],
+			sufixes: []
 		};
 	},
 	methods: {
@@ -95,7 +95,33 @@ export default {
 
 	//este método é disparado quando o componente já está criado
 	//ideal para buscar dados do backend
-	created() {}
+	created() {
+		//Chamar o axios para fazer a conexão com o graphQL
+		//criar com um objeto de configuração
+		axios({
+			url : "http://localhost:4000",
+			method: "post",
+			data : {
+				query : `
+					{
+						prefixes: itens (type: "prefix") {
+							id
+							type
+							description
+						}
+
+						sufixes: itens (type: "sufix") {
+							description
+						}
+					}
+				`
+			}
+		}).then(response => {
+			const query = response.data; //data do axios
+			this.prefixes = query.data.prefixes.map(prefix => prefix.description);
+			this.sufixes = query.data.sufixes.map(sufix => sufix.description);
+		});
+	}
 };
 </script>
 
