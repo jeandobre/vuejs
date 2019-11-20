@@ -4,10 +4,10 @@
 			<div class="container">
 				<div class="row">
 					<div class="col-md">
-						<AppItemList title="Prefixos" v-bind:items="prefixes" v-on:addItem="addPrefix" v-on:deleteItem="deletePrefix"></AppItemList>
+						<AppItemList title="Prefixos" type="prefix" v-bind:items="item.prefix" v-on:addItem="addItem" v-on:deleteItem="deleteItem"></AppItemList>
 					</div>
 					<div class="col-md">
-						<AppItemList title="Sufixos" v-bind:items="sufixes" v-on:addItem="addSufix" v-on:deleteItem="deleteSufix"></AppItemList>
+						<AppItemList title="Sufixos" type="sufix" v-bind:items="item.sufix" v-on:addItem="addItem" v-on:deleteItem="deleteItem"></AppItemList>
 					</div>
 				</div>
 				<br/>
@@ -51,22 +51,80 @@ export default {
 	},
 	data: function() {
 		return {
-			prefixes: [],
-			sufixes: []
+			item: {
+				prefix:[],
+				sufix:[]
+			}
 		};
 	},
 	methods: {
-		addPrefix(prefix) {
-			this.prefixes.push(prefix);
+		addItem(item) {
+			//this.prefixes.push(prefix);
+			axios({
+				url: "http://localhost:4000",
+				method: "post",
+				data:{
+					query:`
+						mutation ($item : ItemInput) {
+							newItem: saveItem (item: $item){
+								id
+								type
+								description
+							}
+						}
+					`,
+					variables:{
+						item
+					}
+				}
+			}).then(response => {
+				const query = response.data;
+				const newItem = query.data.newItem;
+				this.item[item.type].push(newItem);
+			});
 		},
-		addSufix(sufix) {
-			this.sufixes.push(sufix);
+
+		deleteItem(item) {
+			axios({
+				url: "http://localhost:4000",
+				method: "post",
+				data: {
+					query: `
+						mutation($id: Int) {
+							deleted: deleteItem(id: $id)
+						}
+					`,
+					variables:{
+						id : item.id
+					}
+				}
+			}).then(() => {
+				this.getItem(item.type);
+			});
 		},
-		deletePrefix(prefix) {
-			this.prefixes.splice(this.prefixes.indexOf(prefix), 1);
-		},
-		deleteSufix(sufix) {
-			this.sufixes.splice(this.sufixes.indexOf(sufix), 1);
+		
+		getItem(type){
+			axios({
+				url : "http://localhost:4000",
+				method: "post",
+				data : {
+					query : `
+						query($type:String){
+							item: itens (type: $type) {
+								id
+								type
+								description
+							}
+						}
+					`,
+					variables:{
+						type
+					}
+				}
+			}).then(response => {
+				const query = response.data; //data do axios
+				this.item[type] = query.data.item; //.map(prefix => prefix.description);
+			});
 		}
 	},
 	computed: {
@@ -75,9 +133,9 @@ export default {
 			const domains = [];
 			//sempre que prefixes ou sufixes for alterado,
 			//o vue chamará essa função
-			for (const prefix of this.prefixes) {
-				for (const sufix of this.sufixes) {
-					const name = prefix + sufix;
+			for (const prefix of this.item.prefix) {
+				for (const sufix of this.item.sufix) {
+					const name = prefix.description + sufix.description;
 					const link = name.toLowerCase();
 					const url = `http://sistemas.ufgd.edu.br/sai/${link}`;
 					domains.push({
@@ -98,29 +156,8 @@ export default {
 	created() {
 		//Chamar o axios para fazer a conexão com o graphQL
 		//criar com um objeto de configuração
-		axios({
-			url : "http://localhost:4000",
-			method: "post",
-			data : {
-				query : `
-					{
-						prefixes: itens (type: "prefix") {
-							id
-							type
-							description
-						}
-
-						sufixes: itens (type: "sufix") {
-							description
-						}
-					}
-				`
-			}
-		}).then(response => {
-			const query = response.data; //data do axios
-			this.prefixes = query.data.prefixes.map(prefix => prefix.description);
-			this.sufixes = query.data.sufixes.map(sufix => sufix.description);
-		});
+		this.getItem("prefix");
+		this.getItem("sufix");
 	}
 };
 </script>
