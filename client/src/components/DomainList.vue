@@ -20,11 +20,15 @@
 						<ul class="list-group">
 							<li class="list-group-item" v-for="domain in domains" v-bind:key="domain.name">
 								<div class="row">
-									<div class="col-md">
-										{{ domain.name }}
-										{{ domain.url }}
+									<div class="col-md-6">
+										{{ domain.name }}							
 									</div>
-									<div class="col-md text-right">
+									<div class="col-md-3">
+										<span class="badge badge-warning">
+										{{ (domain.available) ? "Disponível" : "Não"}}
+										</span>
+									</div>
+									<div class="col-md-3 text-right">
 										<a class="btn btn-success" v-bind:href="domain.url" target="_blank">
 											<span class="fa fa-shopping-cart"></span>
 										</a>
@@ -54,7 +58,8 @@ export default {
 			item: {
 				prefix:[],
 				sufix:[]
-			}
+			},
+			domains:[]
 		};
 	},
 	methods: {
@@ -81,6 +86,7 @@ export default {
 				const query = response.data;
 				const newItem = query.data.newItem;
 				this.item[item.type].push(newItem);
+				this.generateDomains();
 			});
 		},
 
@@ -99,12 +105,13 @@ export default {
 					}
 				}
 			}).then(() => {
-				this.getItem(item.type);
+				this.item[item.type].splice(this.item[item.type].indexOf(item), 1);
+				this.generateDomains();
 			});
 		},
 		
 		getItem(type){
-			axios({
+			return axios({
 				url : "http://localhost:4000",
 				method: "post",
 				data : {
@@ -125,27 +132,31 @@ export default {
 				const query = response.data; //data do axios
 				this.item[type] = query.data.item; //.map(prefix => prefix.description);
 			});
+		},
+		
+		generateDomains() {
+			axios({
+				url: "http://localhost:4000",
+				method: "post",
+				data: {
+					query: `
+						mutation {
+							domains: generateDomain {
+								name
+								url
+								available
+							}
+						}
+					`
+				}
+			}).then(response => {
+				const query = response.data;
+				this.domains = query.data.domains;
+			});
 		}
 	},
 	computed: {
-		domains() {
-			console.log("gerando domains...");
-			const domains = [];
-			//sempre que prefixes ou sufixes for alterado,
-			//o vue chamará essa função
-			for (const prefix of this.item.prefix) {
-				for (const sufix of this.item.sufix) {
-					const name = prefix.description + sufix.description;
-					const link = name.toLowerCase();
-					const url = `http://sistemas.ufgd.edu.br/sai/${link}`;
-					domains.push({
-						name,
-						url
-					});
-				}
-			}
-			return domains;
-		}
+		//Nada
 	},
 	//neste método ainda não existe os métodos criados,
 	//não é possivel chamar nenhum método
@@ -156,8 +167,13 @@ export default {
 	created() {
 		//Chamar o axios para fazer a conexão com o graphQL
 		//criar com um objeto de configuração
-		this.getItem("prefix");
-		this.getItem("sufix");
+
+		Promise.all([
+			this.getItem("prefix"),
+			this.getItem("sufix")
+		]).then(() => {
+			this.generateDomains();
+		});
 	}
 };
 </script>
