@@ -13,6 +13,7 @@ const typeDefs = `
 		name: String
 		url: String
 		available: Boolean
+		extension: String
 	}
 
 	type Query {
@@ -27,7 +28,8 @@ const typeDefs = `
 	type Mutation {
 		saveItem(item:ItemInput): Item
 		deleteItem(id : Int):Boolean
-		generateDomain: [Domain]
+		generateDomains: [Domain]
+		generateDomain(name: String): [Domain]
 	}
 
 `;
@@ -63,6 +65,7 @@ const resolvers = {
 			itens.push(item);
 			return item;
 		},
+
 		deleteItem(_,args){
 			const id = args.id;
 			const item = itens.find(item => item.id === id);
@@ -70,7 +73,8 @@ const resolvers = {
 			itens.splice(itens.indexOf(item), 1);
 			return true;
 		},
-		async generateDomain(){
+
+		async generateDomains(){
 			//console.log("gerando domains...");
 			const domains = [];
 			//sempre que prefixes ou sufixes for alterado,
@@ -87,6 +91,25 @@ const resolvers = {
 						available
 					});
 				}
+			}
+			return domains;
+		},
+
+		async generateDomain(_, args){
+			const name = args.name;
+			//console.log(name);
+			const domains = [];
+			const extensions = [".com.br", ".com", ".net", ".org"];
+			for(const extension of extensions){
+				const link = name.toLowerCase();
+					const url = `${link}${extension}`;
+					const available = await isDomainAvailable(url);
+					domains.push({
+						name,
+						url,
+						available,
+						extension
+					});
 			}
 			return domains;
 		}

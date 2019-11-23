@@ -32,6 +32,11 @@
 										<a class="btn btn-success" v-bind:href="domain.url" target="_blank">
 											<span class="fa fa-shopping-cart"></span>
 										</a>
+										&nbsp;
+										<button class="btn btn-info" @click="openDomain(domain)">
+											<span class="fa fa-search"></span>
+										</button>
+
 									</div>
 								</div>
 							</li>
@@ -46,117 +51,57 @@
 <script>
 
 import AppItemList from "./AppItemList";
-import axios from "axios/dist/axios";
+import { mapState, mapActions } from "vuex";
 
 export default {
 	name: "app",
 	components: {
 		AppItemList
 	},
+
 	data: function() {
 		return {
-			item: {
-				prefix:[],
-				sufix:[]
-			},
-			domains:[]
+			
 		};
 	},
+
 	methods: {
+		/*
 		addItem(item) {
 			//this.prefixes.push(prefix);
-			axios({
-				url: "http://localhost:4000",
-				method: "post",
-				data:{
-					query:`
-						mutation ($item : ItemInput) {
-							newItem: saveItem (item: $item){
-								id
-								type
-								description
-							}
-						}
-					`,
-					variables:{
-						item
-					}
-				}
-			}).then(response => {
-				const query = response.data;
-				const newItem = query.data.newItem;
-				this.item[item.type].push(newItem);
-				this.generateDomains();
-			});
+			this.$store.dispatch("addItem", item);
 		},
 
 		deleteItem(item) {
-			axios({
-				url: "http://localhost:4000",
-				method: "post",
-				data: {
-					query: `
-						mutation($id: Int) {
-							deleted: deleteItem(id: $id)
-						}
-					`,
-					variables:{
-						id : item.id
-					}
-				}
-			}).then(() => {
-				this.item[item.type].splice(this.item[item.type].indexOf(item), 1);
-				this.generateDomains();
-			});
+			this.$store.dispatch("deleteItem", item);
 		},
 		
 		getItem(type){
-			return axios({
-				url : "http://localhost:4000",
-				method: "post",
-				data : {
-					query : `
-						query($type:String){
-							item: itens (type: $type) {
-								id
-								type
-								description
-							}
-						}
-					`,
-					variables:{
-						type
-					}
-				}
-			}).then(response => {
-				const query = response.data; //data do axios
-				this.item[type] = query.data.item; //.map(prefix => prefix.description);
-			});
+			this.$store.dispatch("getItem", type);
 		},
 		
 		generateDomains() {
-			axios({
-				url: "http://localhost:4000",
-				method: "post",
-				data: {
-					query: `
-						mutation {
-							domains: generateDomain {
-								name
-								url
-								available
-							}
-						}
-					`
-				}
-			}).then(response => {
-				const query = response.data;
-				this.domains = query.data.domains;
+			this.$store.dispatch("generateDomains");
+		},*/
+		...mapActions(["addItem", "deleteItem", "getItem", "generateDomains"]),
+
+		openDomain(domain){
+			this.$router.push({
+				//Template literal (liture)
+				path: `/domains/${domain.name}`
 			});
 		}
 	},
+
 	computed: {
-		//Nada
+		/*
+		item() {
+			return this.$store.state.item;
+		},
+		domains(){
+			return this.$store.state.domains;
+		} */
+		...mapState(["item", "domains"])
 	},
 	//neste método ainda não existe os métodos criados,
 	//não é possivel chamar nenhum método
@@ -168,12 +113,6 @@ export default {
 		//Chamar o axios para fazer a conexão com o graphQL
 		//criar com um objeto de configuração
 
-		Promise.all([
-			this.getItem("prefix"),
-			this.getItem("sufix")
-		]).then(() => {
-			this.generateDomains();
-		});
 	}
 };
 </script>
