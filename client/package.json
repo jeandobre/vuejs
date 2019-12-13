@@ -1,6 +1,8 @@
 {
   "name": "clientn",
   "version": "0.1.0",
+  "description": "Front end do projeto VueJs (NameGator)",
+  "author": "Jean Alexandre Dobre"
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
