@@ -1,5 +1,6 @@
 const { ApolloServer } = require("apollo-server");
 const dns = require("dns");
+const service = require("./service");
 
 const typeDefs = `
 
@@ -34,15 +35,6 @@ const typeDefs = `
 
 `;
 
-const itens = [
-	{ id : 1, type: "prefix", description: "Air"},
-	{ id : 2, type: "prefix", description: "Jet"},
-	{ id : 3, type: "prefix", description: "Flight"},
-	{ id : 4, type: "sufix", description: "Hub"},
-	{ id : 5, type: "sufix", description: "Station"},
-	{ id : 6, type: "sufix", description: "Mart"},
-];
-
 const isDomainAvailable = function(url){
 	return new Promise(function(resolve, reject){
 		dns.resolve(url, function(error){
@@ -54,23 +46,27 @@ const isDomainAvailable = function(url){
 
 const resolvers = {
 	Query : {
-		itens(_,args){
-			return itens.filter(item => item.type === args.type);
+		async itens(_,args){
+			const itens = await service.getItensByType(args.type);
+			return itens; //.filter(item => item.type === args.type);
 		}
 	},
 	Mutation:{
-		saveItem(_,args) { 
+		async saveItem(_,args) { 
 			const item = args.item;
-			item.id = Math.floor(Math.random() * 1000);
-			itens.push(item);
-			return item;
+			//item.id = Math.floor(Math.random() * 1000);
+			//itens.push(item);
+			//destrunct para pegar apenas o primeiro elemento
+			const [newItem] = await service.saveItem(item);			
+			return newItem;
 		},
 
-		deleteItem(_,args){
+		async deleteItem(_,args){
 			const id = args.id;
-			const item = itens.find(item => item.id === id);
-			if(!item) return false;
-			itens.splice(itens.indexOf(item), 1);
+			//const item = itens.find(item => item.id === id);
+			//if(!item) return false;
+			//itens.splice(itens.indexOf(item), 1);
+			await service.deleteItem(id);	
 			return true;
 		},
 
@@ -79,6 +75,8 @@ const resolvers = {
 			const domains = [];
 			//sempre que prefixes ou sufixes for alterado,
 			//o vue chamará essa função
+			const itens = await service.getItens();
+
 			for (const prefix of itens.filter(item => item.type === 'prefix')) {
 				for (const sufix of itens.filter(item => item.type === 'sufix')) {
 					const name = prefix.description + sufix.description;
