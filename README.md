@@ -1,24 +1,23 @@
-# vuejs
+Projeto para acompanhar as aulas do canal Rodrigo Branas no Youtube sobre Vuejs + GraphQL (Namegator).
 
-## Project setup
-```
-npm install
-```
+Aprendendo VueJS
+Aprendendo GraphQL.
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+Requisitos:
+Ter o node instalado e atualizado
+Ter o PostgreSQL instalado.
 
-### Compiles and minifies for production
-```
-npm run build
-```
+O projeto é composto por duas pastas principais: frontend e backend. Ambos estão configurados para rodar no node.js.
 
-### Lints and fixes files
-```
-npm run lint
-```
+Para rodar o projeto basta:
+ - clonar o repositório
+ - Abrir o postgre e rodar o arquivo create.sql da pasta database.
+ - Entrar na psta backend
+ - npm i (para baixar e atualizar as dependências)
+ - node server.js
+ - Entrar na pasta frontend
+ - npm i (para baixar e atualizar as dependências)
+ - npm run serve (para levantar o projeto em ambiente dev)
+ - npm run link (para rodar o lint e corrigir alguns erros no código)
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+Pronto.
