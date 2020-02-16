@@ -1,24 +1,11 @@
-# vuejs
+Projeto para acompanhar as aulas do canal Rodrigo Branas no Youtube sobre Vuejs + GraphQL.
 
-## Project setup
-```
-npm install
-```
+Aprendendo VueJS
+Aprendendo GraphQL.
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+Para rodar o projeto basta:
+ - Ter o node instalado e atualizado 
+ - clonar o repositório
+ - npm i (para baixar e atualizar as dependências)
+ - npm run serve (para levantar o projeto em ambiente dev)
+ - npm run link (para rodar o lint e corrigir alguns erros no código)
